@@ -1,8 +1,6 @@
 module MigrationGenerator
     class MigrationGenerator
       def self.generate(payload)
-        # Here you will process the payload
-        # For example, let's say the payload is a hash that describes columns
         migration_name = "create_#{payload[:table_name]}"
         migration_content = "class #{migration_name.camelize} < ActiveRecord::Migration[6.0]\n  def change\n    create_table :#{payload[:table_name]} do |t|\n"
   
