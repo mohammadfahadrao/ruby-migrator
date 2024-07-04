@@ -45,6 +45,48 @@ module MigrationGenerator
         end
         Rails.root.join('db', 'migrate', file_name)
       end
+
+      def self.verify_payload(payload)
+        errors = []
+        if payload.length.zero?
+          errors << "Unprocessable Entity!"
+        end
+        # Check if the payload contains the required keys
+        unless payload.key?(:table_name)
+          errors << "table_name key is missing"
+        else
+          # Validate table_name if it exists
+          unless payload[:table_name].is_a?(String) && !payload[:table_name].empty? && payload[:table_name] =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/
+            errors << "Invalid table_name"
+          end
+        end
+      
+        unless payload.key?(:columns)
+          errors << "Columns key is missing"
+        else
+          # Validate columns if it exists
+          if payload[:columns].is_a?(Array) && !payload[:columns].empty?
+            payload[:columns].each_with_index do |column, index|
+              unless column.is_a?(Hash) && column.key?(:name) && column.key?(:type)
+                errors << "Column at index #{index} is missing name or type"
+                next
+              end
+      
+              unless column[:name].is_a?(String) && !column[:name].empty? && column[:name] =~ /^[a-zA-Z_][a-zA-Z0-9_]*$/
+                errors << "Invalid column name at index #{index}"
+              end
+      
+              unless column[:type].is_a?(String) && !column[:type].empty? && ["string", "integer", "float", "boolean"].include?(column[:type])
+                errors << "Invalid type for column #{column[:name]}"
+              end
+            end
+          else
+            errors << "Columns must be a non-empty array"
+          end
+        end
+      
+        errors
+      end
     end
   end
   
